@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Social Media Analytics Pro</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --primary:#6366f1;
+  --secondary:#8b5cf6;
+  --dark:#0f172a;
+  --light:#f8fafc;
+  --card-bg: rgba(255,255,255,0.15);
+}
+
+body{
+  margin:0;
+  font-family:'Poppins',sans-serif;
+  background: linear-gradient(135deg,#6366f1,#8b5cf6);
+  color:white;
+  transition:0.3s;
+}
+
+body.dark{
+  background:#0f172a;
+}
+
+header{
+  padding:20px;
+  text-align:center;
+  font-size:24px;
+  font-weight:700;
+}
+
+.container{
+  max-width:1200px;
+  margin:auto;
+  padding:20px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:20px;
+}
+
+.card{
+  background:var(--card-bg);
+  backdrop-filter:blur(15px);
+  padding:20px;
+  border-radius:15px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.2);
+  transition:0.3s;
+}
+
+.card:hover{
+  transform:translateY(-5px);
+}
+
+.stat{
+  font-size:28px;
+  font-weight:700;
+}
+
+button{
+  background:white;
+  color:#6366f1;
+  border:none;
+  padding:10px 15px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+  transition:0.3s;
+}
+
+button:hover{
+  transform:scale(1.05);
+}
+
+.controls{
+  margin:20px 0;
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+input{
+  padding:8px;
+  border-radius:8px;
+  border:none;
+}
+
+canvas{
+  background:white;
+  border-radius:15px;
+  padding:15px;
+}
+
+footer{
+  text-align:center;
+  padding:20px;
+  opacity:0.7;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+📊 Social Media Analytics Pro Dashboard
+</header>
+
+<div class="container">
+
+<div class="controls">
+  <input type="file" id="csvFile">
+  <button onclick="exportPDF()">Export PDF</button>
+  <button onclick="toggleDark()">Toggle Dark Mode</button>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <div>Total Followers</div>
+    <div class="stat" id="followers">0</div>
+  </div>
+  <div class="card">
+    <div>Total Likes</div>
+    <div class="stat" id="likes">0</div>
+  </div>
+  <div class="card">
+    <div>Total Comments</div>
+    <div class="stat" id="comments">0</div>
+  </div>
+  <div class="card">
+    <div>Engagement Rate</div>
+    <div class="stat" id="engagement">0%</div>
+  </div>
+</div>
+
+<br>
+
+<div class="card">
+  <canvas id="engagementChart"></canvas>
+</div>
+
+</div>
+
+<footer>
+© 2026 Social Media Analytics Pro
+</footer>
+
+<script>
+let followers=12000;
+let likes=3500;
+let comments=800;
+
+function updateStats(){
+  document.getElementById("followers").innerText=followers;
+  document.getElementById("likes").innerText=likes;
+  document.getElementById("comments").innerText=comments;
+
+  let engagement=((likes+comments)/followers*100).toFixed(2);
+  document.getElementById("engagement").innerText=engagement+"%";
+}
+updateStats();
+
+const ctx=document.getElementById('engagementChart');
+const chart=new Chart(ctx,{
+  type:'bar',
+  data:{
+    labels:['Followers','Likes','Comments'],
+    datasets:[{
+      label:'Analytics Data',
+      data:[followers,likes,comments],
+      backgroundColor:[
+        '#6366f1','#8b5cf6','#ec4899'
+      ]
+    }]
+  }
+});
+
+document.getElementById('csvFile').addEventListener('change',function(e){
+  const file=e.target.files[0];
+  const reader=new FileReader();
+  reader.onload=function(event){
+    const rows=event.target.result.split('\n').map(r=>r.split(','));
+    followers=parseInt(rows[1][0]);
+    likes=parseInt(rows[1][1]);
+    comments=parseInt(rows[1][2]);
+    updateStats();
+    chart.data.datasets[0].data=[followers,likes,comments];
+    chart.update();
+  }
+  reader.readAsText(file);
+});
+
+function toggleDark(){
+  document.body.classList.toggle("dark");
+}
+
+async function exportPDF(){
+  const { jsPDF }=window.jspdf;
+  const doc=new jsPDF();
+  doc.text("Social Media Analytics Report",20,20);
+  doc.text("Followers: "+followers,20,40);
+  doc.text("Likes: "+likes,20,50);
+  doc.text("Comments: "+comments,20,60);
+  doc.save("report.pdf");
+}
+</script>
+
+</body>
+</html>
